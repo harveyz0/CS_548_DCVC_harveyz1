@@ -6,3 +6,5 @@
 build/
 *.tar
 *.pyd
+*.7z
+*.pth
