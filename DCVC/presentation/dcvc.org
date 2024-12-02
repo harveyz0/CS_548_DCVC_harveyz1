@@ -1,12 +1,12 @@
-#+TITLE:     State of the Art Video Compression
+#+TITLE:     Deep Contextual Video Compression Exploration
 #+AUTHOR:    Zachary Harvey
 #+EMAIL:     harveyz1@sunypoly.edu
-#+DATE:      10-01-2024
+#+DATE:      12-01-2024
 #+EXPORT_FILE_NAME: harveyz1_presentation
 #+DESCRIPTION: Presentation 1 for CS548 Video
 #+KEYWORDS: 
 #+LANGUAGE:  en
-#+OPTIONS:   H:1 num:nil toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t tex:imagemagick
+#+OPTIONS:   H:1 num:nil toc:nil \n:nil @:t ::t |:t -:t ^:t f:t *:t <:t tex:imagemagick
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
@@ -19,27 +19,101 @@
 #+LaTeX_CLASS_OPTIONS: [bigger]
 #+LATEX_HEADER: \usepackage{biblatex}
 #+LATEX_HEADER: \usepackage{textcomp}
+#+LATEX_HEADER: \usepackage{amsmath}
 #+LATEX_HEADER: \addbibresource{references.bib}
 #+LATEX_HEADER: \setbeamertemplate{navigation symbols}{}
 
 
 * Video Compression
+#+ATTR_LATEX: :width 1.0\textwidth
 https://mnd-assets.mynewsdesk.com/image/upload/c_limit,dpr_auto,f_auto,h_700,q_auto,w_auto/hp3atcj4hf9npilgyu37.jpg
 
 * Deep Contextual Video Compression \cite{NEURIPS2021_96b250a9}
+#+ATTR_LATEX: :width 1.0\textwidth
 [[./dcvcFramework.png]]
-The network learns condition rather than the frames or residue encoding.
-The network generates context instead of a predicted from.
 
-The context is in the feature domain to help provide a larger capacity of context over the standard pixel domain.
+* Deep Contextual Video Compression \cite{NEURIPS2021_96b250a9}
+- The network learns condition rather than the frames or residue encoding.
+- The network generates context instead of a predicted from.
+- The context is in the feature domain to help provide a larger capacity of context over the standard pixel domain.
 
-* DCVC con't
+* DCVC con't \cite{NEURIPS2021_96b250a9}
+#+ATTR_LATEX: :width 0.8\textwidth
 [[./visual_examples.png]]
-The four channel examples in context \={x}_t. 
+#+BEGIN_CENTER
+The four channel examples in context \(\bar{x}_t\)
+#+END_CENTER
 
-* DCVC con't
-This method results in being better at encoding motion verses previous residue coding. We can use the network to learn the correlation between x_t and ={x}_t which removes the redundancy rather than using fixed subtraction.
+* DCVC con't \cite{NEURIPS2021_96b250a9}
+This method results in being better at encoding motion verses previous residue coding. We can use the network to learn the correlation between x_t and \(\bar{x}_t\) which removes the redundancy rather than using fixed subtraction.
 
-* Modifications
+* Noisy Modifications
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1.0\textwidth
 [[./noises.png]]
 We make new datasets by adding noise.
+#+END_CENTER
+
+* Noisy Modifications through ffmpeg
+We adjust the amount of noise by applying a bitstream filter.
+#+BEGIN_SRC
+ffmpeg -pix_fmt yuv420p -s 1920x1080
+  -i old_video.yuv -vf crop=1920:1024:0:0
+  -bsf:v noise=100 new_video.yuv
+#+END_SRC
+
+* Original Experiments
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1.0\textwidth
+[[./orig.png]]
+Clean raw yuv videos. \cite{Wang2016}
+#+END_CENTER
+
+* Noise Experiments
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1.0\textwidth
+[[./graphs_noisy.png]]
+Noisy raw YUV videos.
+#+END_CENTER
+
+* No Noise
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1.0\textwidth
+[[./clean_compare.png]]
+Original image left \cite{Wang2016}, After execution on right
+#+END_CENTER
+
+* Lite Noise
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1.0\textwidth
+[[./lite_compare.png]]
+Original lite noise left, After execution on right
+#+END_CENTER
+
+* High Noise
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1.0\textwidth
+[[./high_compare.png]]
+Original high noise left, After execution on right
+#+END_CENTER
+
+* Rolling Noise
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width 1.0\textwidth
+[[./rolling_compare.png]]
+Original rolling noise left, After execution on right
+#+END_CENTER
+
+* Noisy Frames
+It seems to soften noisy frames and just brings in more bytes per pixels
+
+* Conclusion
+- We need very few bits for clean videos.
+- About ten minutes for 120 frames of raw video.
+- About 7GB VRAM per video.
+
+* References
+:PROPERTIES:
+:BEAMER_OPT: allowframebreaks
+:END:
+\printbibliography

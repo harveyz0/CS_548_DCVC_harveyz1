@@ -9,12 +9,35 @@ AVE_BPP = 'ave_all_frame_bpp'
 AVE_QUALITY = 'ave_all_frame_quality'
 
 def main(args):
-    inputs = args[1]
+    #plot_me(args[1])
+    correlate(args[1:])
+
+def plot_me(inputs):
+    aves, name = find_all_aves(load_json(inputs))
+    pprint(aves)
+    plot_old(aves)
+
+def load_json(file_name: str):
     j = None
-    with open(inputs, 'r') as jsonf:
+    with open(file_name, 'r') as jsonf:
         j = load(jsonf)
-    aves = find_all_aves(j)
-    plot(aves)
+    return j
+
+
+def correlate(all_files: [str]):
+    aves = {}
+    for f in all_files:
+        averages, name = find_all_aves(load_json(f))
+        for dataset, pths in averages.items():
+            if dataset not in aves:
+                aves[dataset] = {name: pths}
+            else:
+                aves[dataset][name] = pths
+    for dataset, noisy in aves.items():
+        plot(noisy, dataset)
+    pprint(aves)
+    
+
 
 
 def find_all_for_steaps(data: dict):
@@ -36,12 +59,43 @@ def find_all_for_steaps(data: dict):
 
 def find_all_aves(data: dict):
     reVal = {}
+    name = ''
     for k, i in data.items():
+        if k == 'name':
+            name = i
+            continue
         reVal[k] = find_all_for_steaps(i)
-    return reVal
+    return reVal, name
 
 
 def plot(d: dict, dataset_name=''):
+    '''
+    Take a dictionary of datasets and plot each on a single graph.
+    d : dictionary of type {dataset_name as str : {'pth':{'ave_all_frame_bpp': 0.000, 'ave_all_frame_quality': 0.00}...}...}
+    dataset_name : string of what to make the plots title
+    '''
+    plots = plt.subplot(1,1,1)
+    plots.set_title(dataset_name)
+    plots.grid(True)
+    colors = ['go', 'ro', 'bo', 'yo']
+    for name, pths in d.items():
+        bpp = []
+        quality = []
+        for pth, nums in pths.items():
+            bpp.append(nums[AVE_BPP])
+            quality.append(nums[AVE_QUALITY])
+        plots.plot(bpp, quality, colors.pop(), linestyle='solid', label=name)
+    plots.legend()
+    plots.set_xlabel('BPP')
+    plots.set_ylabel('MS-SSIM')
+    plt.savefig(f'{dataset_name}-noisy.png', bbox_inches='tight')
+    plt.clf()
+    #plt.show()
+
+
+
+
+def plot_old(d: dict, dataset_name=''):
     p = 1
     for dataset, data in d.items():
         bpp = []
@@ -88,6 +142,7 @@ def find_ave(data: dict):
         final_bpp += v[last][AVE_BPP]
         final_quality += v[last][AVE_QUALITY]
     return {AVE_BPP: final_bpp / key_len, AVE_QUALITY: final_quality / key_len}
+
 
 
 if __name__ == "__main__":
