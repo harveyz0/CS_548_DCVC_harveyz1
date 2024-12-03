@@ -3,7 +3,7 @@
 #+EMAIL:     harveyz1@sunypoly.edu
 #+DATE:      12-01-2024
 #+EXPORT_FILE_NAME: harveyz1_presentation
-#+DESCRIPTION: Presentation 1 for CS548 Video
+#+DESCRIPTION: Presentation 2 for CS548 Video
 #+KEYWORDS: 
 #+LANGUAGE:  en
 #+OPTIONS:   H:1 num:nil toc:nil \n:nil @:t ::t |:t -:t ^:t f:t *:t <:t tex:imagemagick
@@ -22,6 +22,8 @@
 #+LATEX_HEADER: \usepackage{amsmath}
 #+LATEX_HEADER: \addbibresource{references.bib}
 #+LATEX_HEADER: \setbeamertemplate{navigation symbols}{}
+#+LATEX_HEADER: \makeatletter\def\clearwrapfig{\ifnum\c@WF@wrappedlines>\@ne\mbox{}\par\expandafter\clearwrapfig\fi}\makeatother
+
 
 
 * Video Compression
@@ -36,16 +38,27 @@ https://mnd-assets.mynewsdesk.com/image/upload/c_limit,dpr_auto,f_auto,h_700,q_a
 - The network learns condition rather than the frames or residue encoding.
 - The network generates context instead of a predicted from.
 - The context is in the feature domain to help provide a larger capacity of context over the standard pixel domain.
+- The data has to be divisible by 64.
 
 * DCVC con't \cite{NEURIPS2021_96b250a9}
-#+ATTR_LATEX: :width 0.8\textwidth
+#+ATTR_LATEX: :width 0.4\textwidth
 [[./visual_examples.png]]
-#+BEGIN_CENTER
-The four channel examples in context \(\bar{x}_t\)
-#+END_CENTER
+- The four channel examples in context \(\bar{x}_t\) compared to the previous frame
+- The x_t high frequency is decomposed by discrete cosine transforms
+- 2 Seems to be extracting more green color information
+- 3 High frequency features seem to be emphasis
+- 4 Seems to be extracting more on red color
 
 * DCVC con't \cite{NEURIPS2021_96b250a9}
-This method results in being better at encoding motion verses previous residue coding. We can use the network to learn the correlation between x_t and \(\bar{x}_t\) which removes the redundancy rather than using fixed subtraction.
+- This method results in being better at encoding motion verses previous residue coding.
+- We can use the network to learn the correlation between x_t and \(\bar{x}_t\) which removes the redundancy rather than using fixed subtraction.
+
+* DCVC Datasets
+- UVG Seven 1920x1080 8bit YUV videos
+- MCL-JCV Thirty 1920x1080 YUV videos
+- They also use HEVC Class B, C, D, E but I did not
+- All data must be cropped to 1920x1024 to be usable
+- All data is an assortment of videos
 
 * Noisy Modifications
 #+BEGIN_CENTER
@@ -54,13 +67,34 @@ This method results in being better at encoding motion verses previous residue c
 We make new datasets by adding noise.
 #+END_CENTER
 
+
 * Noisy Modifications through ffmpeg
-We adjust the amount of noise by applying a bitstream filter.
 #+BEGIN_SRC
 ffmpeg -pix_fmt yuv420p -s 1920x1080
   -i old_video.yuv -vf crop=1920:1024:0:0
-  -bsf:v noise=100 new_video.yuv
+  -bsf:v noise=10 new_video.yuv
 #+END_SRC
+This command will apply noise to every 10th byte.
+
+* Noisy Modifications through ffmpeg
+#+BEGIN_CENTER
+[[./UVGHoney-im00005.png]] \cite{UVGDataset2020}
+That command will result in an image like this.
+#+END_CENTER
+
+* Rolling Noise
+#+BEGIN_CENTER
+[[./rolling_im00003.png]]
+Rolling noise is providing a 1920x1080 video but telling the algorithm it's a 1920x1024
+#+END_CENTER
+
+* Measurements of Quality
+** Multi-Scale Structural Similarity MS-SSIM \cite{WangMSSSIM}
+- Measures the difference between pixels from the raw image to the new decoded image
+- Higher is better
+** Bits per pixel BPP
+- This represents the bitrate cost
+- Lower is better
 
 * Original Experiments
 #+BEGIN_CENTER
@@ -95,6 +129,7 @@ Original lite noise left, After execution on right
 #+ATTR_LATEX: :width 1.0\textwidth
 [[./high_compare.png]]
 Original high noise left, After execution on right
+It seems to soften noisy frames and just brings in more bytes per pixels
 #+END_CENTER
 
 * Rolling Noise
@@ -104,13 +139,10 @@ Original high noise left, After execution on right
 Original rolling noise left, After execution on right
 #+END_CENTER
 
-* Noisy Frames
-It seems to soften noisy frames and just brings in more bytes per pixels
-
 * Conclusion
-- We need very few bits for clean videos.
-- About ten minutes for 120 frames of raw video.
-- About 7GB VRAM per video.
+- Very few bits per pixel to compress noise free videos.
+- In order to encode and decode a raw video of 120 frames takes about ten minutes.
+- The encoding and decoding of that video takes about 7GB VRAM per video.
 
 * References
 :PROPERTIES:
