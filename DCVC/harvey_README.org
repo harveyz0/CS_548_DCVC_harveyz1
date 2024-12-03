@@ -1,0 +1,35 @@
+* Setup
+** Data
+Put your MCL-JCV and your UVG data into one directory so they are siblings. It doesn't matter where they are. These are the directories containing the YUV files. Any files matching the *.yuv glob will be picked up.
+
+cd into the DCVC/data directory and notice the crop.sh script. You'll have to run the script like so
+bash crop.sh "raw_videos_directory" "directory_to_write_cropped"
+raw_videos_directory is where those two sibling directories are from the previous step.
+directory_to_write_cropped is where the script will drop the output, just make this the DCVC/data directory you're already in. Then it'll match the dataset json files. If it doesn't match those json files you have to modifiy them and I don't feel like writing another script right now.
+
+** Checkpoints
+Just do this...
+#+BEGIN_SRC
+    cd ./checkpoints
+    python download_compressai_models.py
+    cd ..
+#+END_SRC
+
+* Actual Run
+You should look over the original README.md to get an idea of the conda environment and stuff. I have the commands I used in the runner.sh file. I'll show you one command here.
+
+#+BEGIN_SRC
+python test_video.py \
+	--i_frame_model_name bmshj2018-hyperprior --i_frame_model_path checkpoints/bmshj2018-hyperprior-ms-ssim-3-92dd7878.pth.tar checkpoints/bmshj2018-hyperprior-ms-ssim-4-4377354e.pth.tar checkpoints/bmshj2018-hyperprior-ms-ssim-5-c34afc8d.pth.tar checkpoints/bmshj2018-hyperprior-ms-ssim-6-3a6d8229.pth.tar \
+	--test_config dataset_config_low.json \
+	--cuda true \
+	--cuda_device 0 \
+	--worker 1 \
+	--output_json_result_path DCVC_low.json \
+	--model_type msssim \
+	--recon_bin_path recon_bin_low_msssim \
+	--model_path checkpoints/model_dcvc_quality_0_msssim.pth checkpoints/model_dcvc_quality_1_msssim.pth checkpoints/model_dcvc_quality_2_msssim.pth checkpoints/model_dcvc_quality_3_msssim.pth \
+	--write_recon_frame "True"
+#+END_SRC
+
+Each run does one of the datasets as you can see by passing in the dataset_config_low.json here. That will only do the low noise data. output_json_result_path is the numbers from MS-SSIM. write_recon_frame is a boolean that will determine if it writes out the resulting decoded images, where recon_bin_path is the directory it does that too.

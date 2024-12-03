@@ -1,5 +1,6 @@
 #!/bin/bash
-set -x
+#set -x
+
 
 NAME="$0"
 
@@ -91,14 +92,38 @@ function main {
     done
 }
 
+function do_all_noises {
+    OUT_DIR="$1"
+    IN_DIR="$2"
+    NAME=$(basename "$IN_DIR")
+    main --outdir "$OUT_DIR/clean/$NAME" --indir "$IN_DIR" --noise 0
+    main --outdir "$OUT_DIR/lite/$NAME" --indir "$IN_DIR" --noise 1
+    main --outdir "$OUT_DIR/high/$NAME" --indir "$IN_DIR" --noise 2
+    main --outdir "$OUT_DIR/rolling/$NAME" --indir "$IN_DIR" --noise 3
+}
+
+
+function from_raw {
+    RAW_DIR="$1"
+    OUT_DIR="$2"
+    if [ ! -d "$RAW_DIR" ] ; then
+        echo "ERROR : Can not find ./raw directory."
+        exit 1
+    fi
+    for d in $(find "$RAW_DIR" -mindepth 1 -maxdepth 1 -type d)
+    do
+    do_all_noises "$OUT_DIR" "$d"
+    done
+}
+
 function help {
     echo "Usage $0"
     echo "      $0 --outdir output_directory --indir input_directory [--noise 1-3]"
     echo "  --outdir output_directory : The directory to write the converted videos too"
     echo "  --indir input_directory : The directory containing matching *.yuv files"
-    echo "  --noise 1-3 : How much noise to build, 1 is lite, 2 is high, 3 is a high rolling noise"
+    echo "  --noise 1-3 : How much noise to build, 1 is lite, 2 is high, 3 is a high rolling noise, any other value will apply no noise"
     echo "                If noise is absent then only the cropping will be applied"
     exit 1
 }
 
-main $*
+from_raw $*
