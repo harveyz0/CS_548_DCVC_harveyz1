@@ -1,0 +1,3 @@
+This is for my project at SUNY Polytechnic for class CS548 taught by Dr Michael Reale.
+
+My modifications are only in the DCVC directory with further instructions there.
